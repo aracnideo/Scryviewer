@@ -1,7 +1,7 @@
-# Scryviewer
+# Scryviewer (Under Progress)
 
 Scryviewer is a Java application developed to explore and visualize **Magic: The Gathering** cards using the **Scryfall API**.  
-It demonstrates a clean architecture approach while consuming external APIs and presenting data in a user-friendly way.
+When done, it shall demonstrate a clean architecture approach while consuming external APIs and presenting data in a user-friendly way.
 
 ## Project Goals
 
