@@ -60,4 +60,10 @@ public class ImageUris {
 		this.border_crop = border_crop;
 	}
 
+	@Override
+	public String toString() {
+		return "ImageUris [small=" + small + ", normal=" + normal + ", large=" + large + ", png=" + png + ", art_crop="
+				+ art_crop + ", border_crop=" + border_crop + "]";
+	}
+
 }
