@@ -102,36 +102,11 @@ public class Card {
 		this.imageUris = imageUris;
 	}
 
-	// Old
-	private String showIf(String string, String rest) {
-		if (string != null && !string.isBlank()) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(rest);
-			sb.append("\n");
-			sb.append(string);
-			return sb.toString();
-		} else {
-			return rest;
-		}
-	}
-
-	private String getPowerToughness() {
-		if (power != null && toughness != null) {
-			return power + "/" + toughness;
-		}
-		return null;
-	}
-
-	// Old
 	@Override
 	public String toString() {
-		String rest = new String();
-		rest = showIf(manaCost, rest);
-		rest = showIf(typeLine, rest);
-		rest = showIf(oracleText, rest);
-		String pt = getPowerToughness();
-		rest = showIf(pt, rest);
-		return name + rest;
+		return "Card [name=" + name + ", manaCost=" + manaCost + ", typeLine=" + typeLine + ", oracleText=" + oracleText
+				+ ", power=" + power + ", toughness=" + toughness + ", flavorText=" + flavorText + ", imageUris="
+				+ imageUris + "]";
 	}
 
 }
