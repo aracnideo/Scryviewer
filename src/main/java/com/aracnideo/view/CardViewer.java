@@ -9,6 +9,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -20,59 +21,47 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import com.aracnideo.exception.CardNotFoundException;
+import com.aracnideo.exception.ExternalServiceException;
 import com.aracnideo.model.Card;
-import com.aracnideo.service.CardSearch;
+import com.aracnideo.repository.CardRepository;
+import com.aracnideo.repository.ScryfallCardRepository;
+import com.aracnideo.service.CardService;
 
-public class CardViewer {
+public class CardViewer extends JFrame {
 	private JTextField searchField;
 	private JTextPane cardTextPane;
 	private JLabel imageLabel;
+	private CardService service;
+	private CardRepository repository;
 
-	public CardViewer() throws IOException, InterruptedException {
+	public CardViewer() {
+		this.repository = new ScryfallCardRepository();
+		this.service = new CardService(repository);
 
-		JFrame frame = new JFrame("Scryviewer");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(1300, 800);
-		frame.setLocationRelativeTo(null);
-		frame.setLayout(new BorderLayout());
+		setTitle("Scryviewer");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(1300, 800);
+		setLocationRelativeTo(null);
+		setLayout(new BorderLayout());
 
 		imageLabel = new JLabel();
 		imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 		JPanel searchPanel = new JPanel();
 		searchField = new JTextField(20);
-		searchField.addActionListener(e -> {
-			try {
-				search();
-			} catch (IOException | InterruptedException e1) {
-				e1.printStackTrace();
-			}
-		});
-		
+		searchField.addActionListener(e -> search());
+
 		JButton randomButton = new JButton("Random");
-		randomButton.addActionListener(e -> {
-			try {
-				Card result = CardSearch.findRandomCard();
-				searchField.setText(result.getName());
-				search();
-			} catch (IOException | InterruptedException e1) {
-				e1.printStackTrace();
-			}
-		});
-		
+		randomButton.addActionListener(e -> findRandom());
+
 		JButton searchButton = new JButton("Search");
-		searchButton.addActionListener(e -> {
-			try {
-				search();
-			} catch (IOException | InterruptedException e1) {
-				e1.printStackTrace();
-			}
-		});
-		
+		searchButton.addActionListener(e -> search());
+
 		searchPanel.add(randomButton);
 		searchPanel.add(searchField);
 		searchPanel.add(searchButton);
-		frame.add(searchPanel, BorderLayout.NORTH);
+		this.add(searchPanel, BorderLayout.NORTH);
 
 		cardTextPane = new JTextPane();
 		cardTextPane.setEditable(false);
@@ -84,33 +73,26 @@ public class CardViewer {
 		splitPane.setDividerLocation(550);
 		splitPane.setResizeWeight(0);
 
-		frame.add(splitPane, BorderLayout.CENTER);
+		this.add(splitPane, BorderLayout.CENTER);
 
 		JButton button = new JButton("Close");
-		button.addActionListener(e -> frame.dispose());
-		frame.add(button, BorderLayout.SOUTH);
+		button.addActionListener(e -> this.dispose());
+		this.add(button, BorderLayout.SOUTH);
 
-		frame.setVisible(true);
-
-		// Format
+		this.setVisible(true);
 
 	}
 
-	private void search() throws IOException, InterruptedException {
+	private void search() {
 		String query = this.searchField.getText();
-		Card result = CardSearch.findCard(query);
-		renderCard(result);
-		if (result.getImageUris() != null) {
-			try {
-				ImageIcon icon = new ImageIcon(new java.net.URL(result.getImageUris().getNormal()));
-				Image img = icon.getImage().getScaledInstance(488, 680, Image.SCALE_SMOOTH);
-				imageLabel.setIcon(new ImageIcon(img));
-
-			} catch (Exception e) {
-				imageLabel.setIcon(null);
-			}
-		} else {
-			imageLabel.setIcon(null);
+		try {
+			Card result = service.search(query);
+			renderCard(result);
+			renderImage(result);
+		} catch (CardNotFoundException e) {
+			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
+		} catch (ExternalServiceException e) {
+			JOptionPane.showMessageDialog(this, "Erro ao conectar com a API.", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -149,6 +131,34 @@ public class CardViewer {
 
 		} catch (BadLocationException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void renderImage(Card card) {
+		if (card.getImageUris() != null) {
+			try {
+				ImageIcon icon = new ImageIcon(new java.net.URL(card.getImageUris().getNormal()));
+				Image img = icon.getImage().getScaledInstance(488, 680, Image.SCALE_SMOOTH);
+				imageLabel.setIcon(new ImageIcon(img));
+
+			} catch (Exception e) {
+				imageLabel.setIcon(null);
+			}
+		} else {
+			imageLabel.setIcon(null);
+		}
+	}
+
+	private void findRandom() {
+		try {
+			Card result = service.random();
+			searchField.setText(result.getName());
+			renderCard(result);
+			renderImage(result);
+		} catch (CardNotFoundException ex) {
+			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
+		} catch (ExternalServiceException ex) {
+			JOptionPane.showMessageDialog(this, "Erro ao conectar com a API.", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
