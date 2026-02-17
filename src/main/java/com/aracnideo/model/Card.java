@@ -14,16 +14,28 @@ public class Card {
 	private String typeLine;
 	@JsonProperty("oracle_text")
 	private String oracleText;
-
+	@JsonProperty("power")
+	private String power;
+	@JsonProperty("toughness")
+	private String toughness;
+	@JsonProperty("flavor_text")
+	private String flavorText;
+	@JsonProperty("image_uris")
+	private ImageUris imageUris;
 
 	public Card() {
 	}
 
-	public Card(String name, String manaCost, String oracleText, String typeLine) {
+	public Card(String name, String manaCost, String oracleText, String typeLine, String power, String toughness,
+			String flavorText, ImageUris imageUris) {
 		this.name = name;
 		this.manaCost = manaCost;
 		this.oracleText = oracleText;
 		this.typeLine = typeLine;
+		this.power = power;
+		this.toughness = toughness;
+		this.flavorText = flavorText;
+		this.imageUris = imageUris;
 	}
 
 	public String getName() {
@@ -49,8 +61,6 @@ public class Card {
 	public void setOracleText(String oracleText) {
 		this.oracleText = oracleText;
 	}
-	
-	
 
 	public String getTypeLine() {
 		return typeLine;
@@ -60,25 +70,67 @@ public class Card {
 		this.typeLine = typeLine;
 	}
 
+	public String getPower() {
+		return power;
+	}
+
+	public void setPower(String power) {
+		this.power = power;
+	}
+
+	public String getToughness() {
+		return toughness;
+	}
+
+	public void setToughness(String toughness) {
+		this.toughness = toughness;
+	}
+
+	public String getFlavorText() {
+		return flavorText;
+	}
+
+	public void setFlavorText(String flavorText) {
+		this.flavorText = flavorText;
+	}
+
+	public ImageUris getImageUris() {
+		return imageUris;
+	}
+
+	public void setImageUris(ImageUris imageUris) {
+		this.imageUris = imageUris;
+	}
+
+	// Old
 	private String showIf(String string, String rest) {
-		if (string != null) {
+		if (string != null && !string.isBlank()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(rest);
 			sb.append("\n");
 			sb.append(string);
 			return sb.toString();
-		} 
-		else {
+		} else {
 			return rest;
 		}
 	}
 
+	private String getPowerToughness() {
+		if (power != null && toughness != null) {
+			return power + "/" + toughness;
+		}
+		return null;
+	}
+
+	// Old
 	@Override
 	public String toString() {
 		String rest = new String();
 		rest = showIf(manaCost, rest);
 		rest = showIf(typeLine, rest);
 		rest = showIf(oracleText, rest);
+		String pt = getPowerToughness();
+		rest = showIf(pt, rest);
 		return name + rest;
 	}
 
