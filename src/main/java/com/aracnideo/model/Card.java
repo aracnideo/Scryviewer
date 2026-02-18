@@ -1,10 +1,12 @@
 package com.aracnideo.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Card {
+public class Card implements CardSide {
 
 	@JsonProperty("name")
 	private String name;
@@ -22,6 +24,8 @@ public class Card {
 	private String flavorText;
 	@JsonProperty("image_uris")
 	private ImageUris imageUris;
+	@JsonProperty("card_faces")
+	private List<CardFace> cardFaces;
 
 	public Card() {
 	}
@@ -100,6 +104,22 @@ public class Card {
 
 	public void setImageUris(ImageUris imageUris) {
 		this.imageUris = imageUris;
+	}
+
+	public boolean isDoubleFaced() {
+		return cardFaces != null && !cardFaces.isEmpty();
+	}
+
+	public CardFace getFrontFace() {
+		if (isDoubleFaced())
+			return cardFaces.get(0);
+		return null;
+	}
+
+	public CardFace getBackFace() {
+		if (isDoubleFaced() && cardFaces.size() > 1)
+			return cardFaces.get(1);
+		return null;
 	}
 
 	@Override

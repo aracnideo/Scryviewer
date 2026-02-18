@@ -41,8 +41,10 @@ public class ScryfallCardRepository implements CardRepository {
 
 	private Card executeRequest(String endpoint) {
 		String fullUrl = BASE_URL + endpoint;
+		System.out.println(fullUrl);
 		try {
-			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl)).GET().build();
+			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl)).header("Accept", "application/json")
+					.GET().build();
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			int status = response.statusCode();
 			if (status == 404) {

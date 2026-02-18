@@ -1,10 +1,11 @@
 package com.aracnideo.view;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.io.IOException;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,6 +25,7 @@ import javax.swing.text.StyledDocument;
 import com.aracnideo.exception.CardNotFoundException;
 import com.aracnideo.exception.ExternalServiceException;
 import com.aracnideo.model.Card;
+import com.aracnideo.model.CardSide;
 import com.aracnideo.repository.CardRepository;
 import com.aracnideo.repository.ScryfallCardRepository;
 import com.aracnideo.service.CardService;
@@ -34,6 +36,9 @@ public class CardViewer extends JFrame {
 	private JLabel imageLabel;
 	private CardService service;
 	private CardRepository repository;
+	private Card currentCard;
+	private boolean showingFront = true;
+	private JButton flipButton;
 
 	public CardViewer() {
 		this.repository = new ScryfallCardRepository();
@@ -48,7 +53,7 @@ public class CardViewer extends JFrame {
 		imageLabel = new JLabel();
 		imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-		JPanel searchPanel = new JPanel();
+		JPanel searchPanel = new JPanel(new BorderLayout());
 		searchField = new JTextField(20);
 		searchField.addActionListener(e -> search());
 
@@ -58,9 +63,30 @@ public class CardViewer extends JFrame {
 		JButton searchButton = new JButton("Search");
 		searchButton.addActionListener(e -> search());
 
-		searchPanel.add(randomButton);
-		searchPanel.add(searchField);
-		searchPanel.add(searchButton);
+		flipButton = new JButton("Flip");
+		flipButton.addActionListener(e -> flipCard());
+		flipButton.setEnabled(false);
+
+		JPanel leftPanel = new JPanel();
+
+		FlowLayout layout = new FlowLayout();
+		layout.setAlignment(FlowLayout.LEFT);
+		layout.setHgap(30);
+		layout.setVgap(10);
+
+		leftPanel.setLayout(layout);
+
+		leftPanel.add(searchField);
+		leftPanel.add(searchButton);
+		leftPanel.add(flipButton);
+		leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 100, 10, 100));
+
+		JPanel rightPanel = new JPanel();
+		rightPanel.add(randomButton);
+		rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 100));
+
+		searchPanel.add(leftPanel, BorderLayout.WEST);
+		searchPanel.add(rightPanel, BorderLayout.EAST);
 		this.add(searchPanel, BorderLayout.NORTH);
 
 		cardTextPane = new JTextPane();
@@ -87,16 +113,43 @@ public class CardViewer extends JFrame {
 		String query = this.searchField.getText();
 		try {
 			Card result = service.search(query);
-			renderCard(result);
-			renderImage(result);
+			this.currentCard = result;
+			this.showingFront = true;
+			if (result.isDoubleFaced()) {
+				renderCard(result.getFrontFace());
+				renderImage(result.getFrontFace());
+			} else {
+				renderCard(result);
+				renderImage(result);
+			}
+			flipButton.setEnabled(result.isDoubleFaced());
 		} catch (CardNotFoundException e) {
 			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
 		} catch (ExternalServiceException e) {
-			JOptionPane.showMessageDialog(this, "Erro ao conectar com a API.", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Error connecting to API.", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
-	private void renderCard(Card result) {
+	private void flipCard() {
+		if (currentCard == null)
+			return;
+
+		if (!currentCard.isDoubleFaced())
+			return;
+
+		showingFront = !showingFront;
+
+		if (showingFront) {
+			renderCard(currentCard.getFrontFace());
+			renderImage(currentCard.getFrontFace());
+		} else {
+			renderCard(currentCard.getBackFace());
+			renderImage(currentCard.getBackFace());
+		}
+	}
+
+	private void renderCard(CardSide result) {
 		try {
 			StyledDocument doc = cardTextPane.getStyledDocument();
 			doc.remove(0, doc.getLength());
@@ -134,17 +187,16 @@ public class CardViewer extends JFrame {
 		}
 	}
 
-	private void renderImage(Card card) {
-		if (card.getImageUris() != null) {
-			try {
-				ImageIcon icon = new ImageIcon(new java.net.URL(card.getImageUris().getNormal()));
-				Image img = icon.getImage().getScaledInstance(488, 680, Image.SCALE_SMOOTH);
-				imageLabel.setIcon(new ImageIcon(img));
-
-			} catch (Exception e) {
-				imageLabel.setIcon(null);
-			}
-		} else {
+	private void renderImage(CardSide card) {
+		if (card == null || card.getImageUris() == null) {
+			imageLabel.setIcon(null);
+			return;
+		}
+		try {
+			ImageIcon icon = new ImageIcon(new java.net.URL(card.getImageUris().getNormal()));
+			Image img = icon.getImage().getScaledInstance(488, 680, Image.SCALE_SMOOTH);
+			imageLabel.setIcon(new ImageIcon(img));
+		} catch (Exception e) {
 			imageLabel.setIcon(null);
 		}
 	}
@@ -152,13 +204,21 @@ public class CardViewer extends JFrame {
 	private void findRandom() {
 		try {
 			Card result = service.random();
+			this.currentCard = result;
+			this.showingFront = true;
 			searchField.setText(result.getName());
-			renderCard(result);
-			renderImage(result);
+			if (result.isDoubleFaced()) {
+				renderCard(result.getFrontFace());
+				renderImage(result.getFrontFace());
+			} else {
+				renderCard(result);
+				renderImage(result);
+			}
+			flipButton.setEnabled(result.isDoubleFaced());
 		} catch (CardNotFoundException ex) {
 			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
 		} catch (ExternalServiceException ex) {
-			JOptionPane.showMessageDialog(this, "Erro ao conectar com a API.", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Error connecting to API.", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
