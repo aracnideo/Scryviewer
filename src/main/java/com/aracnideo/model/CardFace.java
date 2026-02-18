@@ -24,13 +24,15 @@ public class CardFace implements CardSide {
 	private ImageUris imageUris;
 	@JsonProperty("artist")
 	private String artist;
+	@JsonProperty("loyalty")
+	private String loyalty;
 
 	public CardFace() {
 
 	}
 
 	public CardFace(String name, String manaCost, String typeLine, String oracleText, String power, String toughness,
-			String flavorText, ImageUris imageUris, String artist) {
+			String flavorText, ImageUris imageUris, String artist, String loyalty) {
 		super();
 		this.name = name;
 		this.manaCost = manaCost;
@@ -41,6 +43,7 @@ public class CardFace implements CardSide {
 		this.flavorText = flavorText;
 		this.imageUris = imageUris;
 		this.artist = artist;
+		this.loyalty = loyalty;
 	}
 
 	public String getName() {
@@ -115,11 +118,19 @@ public class CardFace implements CardSide {
 		this.artist = artist;
 	}
 
+	public String getLoyalty() {
+		return loyalty;
+	}
+
+	public void setLoyalty(String loyalty) {
+		this.loyalty = loyalty;
+	}
+
 	@Override
 	public String toString() {
 		return "CardFace [name=" + name + ", manaCost=" + manaCost + ", typeLine=" + typeLine + ", oracleText="
 				+ oracleText + ", power=" + power + ", toughness=" + toughness + ", flavorText=" + flavorText
-				+ ", imageUris=" + imageUris + ", artist=" + artist + "]";
+				+ ", imageUris=" + imageUris + ", artist=" + artist + ", loyalty=" + loyalty + "]";
 	}
 
 }

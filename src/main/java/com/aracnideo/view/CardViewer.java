@@ -194,9 +194,9 @@ public class CardViewer extends JFrame {
 			StyleConstants.setFontSize(italicStyle, 18);
 			StyleConstants.setItalic(italicStyle, true);
 
-			Style legalityStyle = cardTextPane.addStyle("Legality", null);
-			StyleConstants.setFontSize(legalityStyle, 16);
-			StyleConstants.setBold(legalityStyle, true);
+			Style boldStyle = cardTextPane.addStyle("Bold", null);
+			StyleConstants.setFontSize(boldStyle, 18);
+			StyleConstants.setBold(boldStyle, true);
 
 			doc.insertString(doc.getLength(), result.getName() + "\n", titleStyle);
 
@@ -209,8 +209,9 @@ public class CardViewer extends JFrame {
 				doc.insertString(doc.getLength(), result.getOracleText() + "\n\n", normalStyle);
 
 			if (result.getPower() != null && result.getToughness() != null)
-				doc.insertString(doc.getLength(), result.getPower() + "/" + result.getToughness() + "\n\n",
-						normalStyle);
+				doc.insertString(doc.getLength(), result.getPower() + "/" + result.getToughness() + "\n\n", boldStyle);
+			if (result.getLoyalty() != null)
+				doc.insertString(doc.getLength(), "\n Loyalty: " + result.getLoyalty(), boldStyle);
 
 			if (result.getFlavorText() != null)
 				doc.insertString(doc.getLength(), result.getFlavorText(), italicStyle);

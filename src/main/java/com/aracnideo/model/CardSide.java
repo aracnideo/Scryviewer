@@ -11,4 +11,5 @@ public interface CardSide {
 	String getFlavorText();
 	ImageUris getImageUris();
 	String getArtist();
+	String getLoyalty();
 }
