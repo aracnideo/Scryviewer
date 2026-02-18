@@ -1,13 +1,16 @@
 package com.aracnideo.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -17,6 +20,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -39,6 +43,8 @@ public class CardViewer extends JFrame {
 	private Card currentCard;
 	private boolean showingFront = true;
 	private JButton flipButton;
+	private JComboBox<String> formatSelector;
+	private JLabel legalityLabel;
 
 	public CardViewer() {
 		this.repository = new ScryfallCardRepository();
@@ -67,6 +73,13 @@ public class CardViewer extends JFrame {
 		flipButton.addActionListener(e -> flipCard());
 		flipButton.setEnabled(false);
 
+		JLabel searchLabel = new JLabel("Search:");
+		JLabel formatSelectorLabel = new JLabel("Format:");
+
+		formatSelector = new JComboBox<>(
+				new String[] { "Standard", "Commander", "Modern", "Legacy", "Pioneer", "Pauper" });
+		formatSelector.addActionListener(e -> updateLegalityColor());
+
 		JPanel leftPanel = new JPanel();
 
 		FlowLayout layout = new FlowLayout();
@@ -76,10 +89,13 @@ public class CardViewer extends JFrame {
 
 		leftPanel.setLayout(layout);
 
+		leftPanel.add(searchLabel);
 		leftPanel.add(searchField);
 		leftPanel.add(searchButton);
 		leftPanel.add(flipButton);
-		leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 100, 10, 100));
+		leftPanel.add(formatSelectorLabel);
+		leftPanel.add(formatSelector);
+		leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 36, 10, 100));
 
 		JPanel rightPanel = new JPanel();
 		rightPanel.add(randomButton);
@@ -101,9 +117,21 @@ public class CardViewer extends JFrame {
 
 		this.add(splitPane, BorderLayout.CENTER);
 
+		JPanel southPanel = new JPanel(new BorderLayout());
+
 		JButton button = new JButton("Close");
 		button.addActionListener(e -> this.dispose());
-		this.add(button, BorderLayout.SOUTH);
+		southPanel.add(button, BorderLayout.EAST);
+
+		legalityLabel = new JLabel(" ");
+		legalityLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		legalityLabel.setFont(new Font("Serif", Font.BOLD, 16));
+
+		Border emptyBorder = BorderFactory.createEmptyBorder(8, 16, 8, 16);
+		southPanel.setBorder(emptyBorder);
+		southPanel.add(legalityLabel, BorderLayout.CENTER);
+
+		this.add(southPanel, BorderLayout.SOUTH);
 
 		this.setVisible(true);
 
@@ -123,6 +151,7 @@ public class CardViewer extends JFrame {
 				renderImage(result);
 			}
 			flipButton.setEnabled(result.isDoubleFaced());
+			updateLegalityColor();
 		} catch (CardNotFoundException e) {
 			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
 		} catch (ExternalServiceException e) {
@@ -165,6 +194,10 @@ public class CardViewer extends JFrame {
 			StyleConstants.setFontSize(italicStyle, 18);
 			StyleConstants.setItalic(italicStyle, true);
 
+			Style legalityStyle = cardTextPane.addStyle("Legality", null);
+			StyleConstants.setFontSize(legalityStyle, 16);
+			StyleConstants.setBold(legalityStyle, true);
+
 			doc.insertString(doc.getLength(), result.getName() + "\n", titleStyle);
 
 			if (result.getManaCost() != null)
@@ -184,7 +217,6 @@ public class CardViewer extends JFrame {
 
 			if (result.getArtist() != null)
 				doc.insertString(doc.getLength(), "\n\n\tIllustrated by " + result.getArtist(), normalStyle);
-
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -218,6 +250,7 @@ public class CardViewer extends JFrame {
 				renderImage(result);
 			}
 			flipButton.setEnabled(result.isDoubleFaced());
+			updateLegalityColor();
 		} catch (CardNotFoundException ex) {
 			JOptionPane.showMessageDialog(this, "Card not found.", "Warning", JOptionPane.WARNING_MESSAGE);
 		} catch (ExternalServiceException ex) {
@@ -225,4 +258,49 @@ public class CardViewer extends JFrame {
 		}
 	}
 
+	public void updateLegalityColor() {
+		updateLegalityDisplay();
+		if (currentCard == null)
+			return;
+		String selectedFormat = (String) formatSelector.getSelectedItem();
+		String status = currentCard.getLegalities().get(selectedFormat.toLowerCase());
+		if (!"legal".equals(status)) {
+			cardTextPane.setBackground(new Color(255, 226, 226));
+		} else {
+			cardTextPane.setBackground(Color.WHITE);
+		}
+	}
+
+	public void updateLegalityDisplay() {
+		if (currentCard == null) {
+			legalityLabel.setText(" ");
+			return;
+		}
+		String selectedFormat = (String) formatSelector.getSelectedItem();
+		String status = currentCard.getLegalities().get(selectedFormat.toLowerCase());
+		if (status == null) {
+			legalityLabel.setText(" ");
+			return;
+		}
+		Color color;
+		switch (status) {
+		case "banned":
+			color = new Color(200, 0, 0);
+			break;
+		case "restricted":
+			color = new Color(200, 150, 0);
+			break;
+		case "legal":
+			color = new Color(0, 130, 0);
+			break;
+		default:
+			color = Color.GRAY;
+		}
+		legalityLabel.setForeground(color);
+		if (!"legal".equals(status)) {
+			legalityLabel.setText("⚠ Not legal in " + selectedFormat + " (" + status + ")");
+		} else {
+			legalityLabel.setText("✓ Legal in " + selectedFormat);
+		}
+	}
 }

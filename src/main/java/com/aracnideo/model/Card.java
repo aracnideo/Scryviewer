@@ -1,6 +1,7 @@
 package com.aracnideo.model;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +29,7 @@ public class Card implements CardSide {
 	private String artist;
 	@JsonProperty("card_faces")
 	private List<CardFace> cardFaces;
+	private Map<String, String> legalities;
 
 	public Card() {
 	}
@@ -133,6 +135,14 @@ public class Card implements CardSide {
 
 	public void setArtist(String artist) {
 		this.artist = artist;
+	}
+
+	public Map<String, String> getLegalities() {
+		return legalities;
+	}
+
+	public void setLegalities(Map<String, String> legalities) {
+		this.legalities = legalities;
 	}
 
 	@Override
