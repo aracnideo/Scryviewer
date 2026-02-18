@@ -10,4 +10,5 @@ public interface CardSide {
 	String getToughness();
 	String getFlavorText();
 	ImageUris getImageUris();
+	String getArtist();
 }

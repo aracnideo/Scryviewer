@@ -182,6 +182,9 @@ public class CardViewer extends JFrame {
 			if (result.getFlavorText() != null)
 				doc.insertString(doc.getLength(), result.getFlavorText(), italicStyle);
 
+			if (result.getArtist() != null)
+				doc.insertString(doc.getLength(), "\n\n\tIllustrated by " + result.getArtist(), normalStyle);
+
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
