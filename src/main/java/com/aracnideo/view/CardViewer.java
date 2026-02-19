@@ -35,6 +35,9 @@ import com.aracnideo.repository.ScryfallCardRepository;
 import com.aracnideo.service.CardService;
 
 public class CardViewer extends JFrame {
+
+	private static final double IMAGE_SCALE = 0.90;
+
 	private JTextField searchField;
 	private JTextPane cardTextPane;
 	private JLabel imageLabel;
@@ -134,6 +137,7 @@ public class CardViewer extends JFrame {
 		this.add(southPanel, BorderLayout.SOUTH);
 
 		this.setVisible(true);
+		findRandom();
 
 	}
 
@@ -228,11 +232,22 @@ public class CardViewer extends JFrame {
 			imageLabel.setIcon(null);
 			return;
 		}
+
 		try {
-			ImageIcon icon = new ImageIcon(new java.net.URL(card.getImageUris().getNormal()));
-			Image img = icon.getImage().getScaledInstance(488, 680, Image.SCALE_SMOOTH);
-			imageLabel.setIcon(new ImageIcon(img));
+			java.net.URL url = new java.net.URI(card.getImageUris().getNormal()).toURL();
+			java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(url);
+
+			if (bufferedImage != null) {
+				int newWidth = (int) (bufferedImage.getWidth() * IMAGE_SCALE);
+				int newHeight = (int) (bufferedImage.getHeight() * IMAGE_SCALE);
+				Image scaled = bufferedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+				imageLabel.setIcon(new ImageIcon(scaled));
+			} else {
+				imageLabel.setIcon(null);
+			}
+
 		} catch (Exception e) {
+			e.printStackTrace();
 			imageLabel.setIcon(null);
 		}
 	}
