@@ -1,7 +1,7 @@
-# Scryviewer (Under Progress)
+# Scryviewer
 
-Scryviewer is a Java application developed to explore and visualize **Magic: The Gathering** cards using the **Scryfall API**.  
-When done, it shall demonstrate a clean architecture approach while consuming external APIs and presenting data in a user-friendly way.
+Scryviewer is a Java desktop application built to explore and visualize Magic: The Gathering cards using the Scryfall API.
+The project demonstrates clean architecture principles, REST API consumption, structured exception handling, and a responsive Swing-based UI.
 
 ## Project Goals
 
@@ -10,13 +10,15 @@ When done, it shall demonstrate a clean architecture approach while consuming ex
 - Display card information dynamically  
 - Apply layered architecture (Repository + Service + UI)  
 - Handle JSON parsing and exceptions properly  
-- Organize code following SOLID principles  
+- Organize code following SOLID principles
+- Proper exception handling
 
 ## Technologies Used
 
 - Java 25  
-- HTTP Client (Java built-in)  
-- JSON Parsing (Gson / Jackson)  
+- Java HTTP Client
+- Jackson (JSON parsing)
+- Swing (Desktop UI)
 - Git & GitHub  
 
 ## Features
@@ -28,15 +30,18 @@ When done, it shall demonstrate a clean architecture approach while consuming ex
 
 ## How to Run
 
-1. Run the main application class
-2. Type the card name to search and view results
-
+1. Clone the repository
+2. Run the Main class
+3. Search for a card or click Random
 
 ## Concepts Practiced
 
 - HTTP requests in Java
+- HTTP status handling (200, 400, 404, etc.)
 - JSON parsing and data mapping
-- Clean code practices and modular design
+- Clean architecture principles
+- SOLID design
+- Separation of concerns
 
 ## Author
 Marcelo Parabocz
