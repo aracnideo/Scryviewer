@@ -41,7 +41,6 @@ public class ScryfallCardRepository implements CardRepository {
 
 	private Card executeRequest(String endpoint) {
 		String fullUrl = BASE_URL + endpoint;
-		System.out.println(fullUrl);
 		try {
 			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl)).header("Accept", "application/json")
 					.GET().build();
@@ -49,6 +48,9 @@ public class ScryfallCardRepository implements CardRepository {
 			int status = response.statusCode();
 			if (status == 404) {
 				throw new CardNotFoundException("Card not found.");
+			}
+			if (status == 400) {
+				throw new CardNotFoundException("Invalid search query.");
 			}
 			if (status != 200) {
 				throw new ExternalServiceException("Scryfall API returned status: " + status, null);
