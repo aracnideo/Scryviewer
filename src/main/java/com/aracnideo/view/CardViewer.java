@@ -6,6 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -36,7 +38,12 @@ import com.aracnideo.service.CardService;
 
 public class CardViewer extends JFrame {
 
+	private static final long serialVersionUID = 1L;
+
 	private static final double IMAGE_SCALE = 0.90;
+
+	private List<Card> history = new ArrayList<Card>();
+	private int currentIndex = -1;
 
 	private JTextField searchField;
 	private JTextPane cardTextPane;
@@ -46,8 +53,12 @@ public class CardViewer extends JFrame {
 	private Card currentCard;
 	private boolean showingFront = true;
 	private JButton flipButton;
+	private JButton backButton;
+	private JButton forwardButton;
 	private JComboBox<String> formatSelector;
 	private JLabel legalityLabel;
+	private JButton randomButton;
+	private JButton searchButton;
 
 	public CardViewer() {
 		this.repository = new ScryfallCardRepository();
@@ -66,10 +77,16 @@ public class CardViewer extends JFrame {
 		searchField = new JTextField(20);
 		searchField.addActionListener(e -> search());
 
-		JButton randomButton = new JButton("Random");
+		backButton = new JButton("Back");
+		forwardButton = new JButton("Forward");
+
+		backButton.addActionListener(e -> goBack());
+		forwardButton.addActionListener(e -> goForward());
+
+		randomButton = new JButton("Random");
 		randomButton.addActionListener(e -> findRandom());
 
-		JButton searchButton = new JButton("Search");
+		searchButton = new JButton("Search");
 		searchButton.addActionListener(e -> search());
 
 		flipButton = new JButton("Flip");
@@ -92,20 +109,18 @@ public class CardViewer extends JFrame {
 
 		leftPanel.setLayout(layout);
 
+		leftPanel.add(backButton);
+		leftPanel.add(forwardButton);
 		leftPanel.add(searchLabel);
 		leftPanel.add(searchField);
 		leftPanel.add(searchButton);
 		leftPanel.add(flipButton);
 		leftPanel.add(formatSelectorLabel);
 		leftPanel.add(formatSelector);
+		leftPanel.add(randomButton);
 		leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 36, 10, 100));
 
-		JPanel rightPanel = new JPanel();
-		rightPanel.add(randomButton);
-		rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 100));
-
 		searchPanel.add(leftPanel, BorderLayout.WEST);
-		searchPanel.add(rightPanel, BorderLayout.EAST);
 		this.add(searchPanel, BorderLayout.NORTH);
 
 		cardTextPane = new JTextPane();
@@ -138,6 +153,7 @@ public class CardViewer extends JFrame {
 
 		this.setVisible(true);
 		findRandom();
+		updateNavigationButtons();
 
 	}
 
@@ -147,6 +163,7 @@ public class CardViewer extends JFrame {
 			Card result = service.search(query);
 			this.currentCard = result;
 			this.showingFront = true;
+			addToHistory(result);
 			if (result.isDoubleFaced()) {
 				renderCard(result.getFrontFace());
 				renderImage(result.getFrontFace());
@@ -167,12 +184,9 @@ public class CardViewer extends JFrame {
 	private void flipCard() {
 		if (currentCard == null)
 			return;
-
 		if (!currentCard.isDoubleFaced())
 			return;
-
 		showingFront = !showingFront;
-
 		if (showingFront) {
 			renderCard(currentCard.getFrontFace());
 			renderImage(currentCard.getFrontFace());
@@ -258,6 +272,7 @@ public class CardViewer extends JFrame {
 			this.currentCard = result;
 			this.showingFront = true;
 			searchField.setText(result.getName());
+			addToHistory(result);
 			if (result.isDoubleFaced()) {
 				renderCard(result.getFrontFace());
 				renderImage(result.getFrontFace());
@@ -274,7 +289,7 @@ public class CardViewer extends JFrame {
 		}
 	}
 
-	public void updateLegalityColor() {
+	private void updateLegalityColor() {
 		updateLegalityDisplay();
 		if (currentCard == null)
 			return;
@@ -287,7 +302,7 @@ public class CardViewer extends JFrame {
 		}
 	}
 
-	public void updateLegalityDisplay() {
+	private void updateLegalityDisplay() {
 		if (currentCard == null) {
 			legalityLabel.setText(" ");
 			return;
@@ -318,5 +333,56 @@ public class CardViewer extends JFrame {
 		} else {
 			legalityLabel.setText("✓ Legal in " + selectedFormat);
 		}
+	}
+
+	private void addToHistory(Card card) {
+		if (currentIndex >= 0) {
+			Card current = history.get(currentIndex);
+			if (current.getName().equalsIgnoreCase(card.getName())) {
+				return;
+			}
+		}
+		if (currentIndex < history.size() - 1) {
+			history = new ArrayList<>(history.subList(0, currentIndex + 1));
+		}
+		history.add(card);
+		currentIndex++;
+		updateNavigationButtons();
+	}
+
+	private void goBack() {
+		if (currentIndex > 0) {
+			currentIndex--;
+			updateNavigationButtons();
+			renderFromHistory();
+		}
+	}
+
+	private void goForward() {
+		if (currentIndex < history.size() - 1) {
+			currentIndex++;
+			updateNavigationButtons();
+			renderFromHistory();
+		}
+	}
+
+	private void renderFromHistory() {
+		Card card = history.get(currentIndex);
+		currentCard = card;
+		showingFront = true;
+		if (card.isDoubleFaced()) {
+			renderCard(card.getFrontFace());
+			renderImage(card.getFrontFace());
+		} else {
+			renderCard(card);
+			renderImage(card);
+		}
+		flipButton.setEnabled(card.isDoubleFaced());
+		updateLegalityColor();
+	}
+
+	private void updateNavigationButtons() {
+		backButton.setEnabled(currentIndex > 0);
+		forwardButton.setEnabled(currentIndex < history.size() - 1);
 	}
 }
