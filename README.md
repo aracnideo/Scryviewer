@@ -44,5 +44,5 @@ The project demonstrates clean architecture principles, REST API consumption, st
 - Separation of concerns
 
 ## Author
-Marcelo Parabocz
+Marcelo Parabocz <br>
 Backend Developer in progress.
